@@ -1,0 +1,62 @@
+# study thermal resistance of CnT junction
+# 10/27/2010
+
+read_restart	save.15ns
+
+#pair_style: sets the formula(e) LAMMPS uses to compute interactions between pairs;
+#airebo: computes AIREBO potential
+pair_style	airebo 2.0 1 1
+
+#reads data from "data.6x6" file
+
+#pair_coeff: sets the pairwise force fields coefficients of pairs of atom types
+pair_coeff * * CH.airebo C
+
+#neighbor: sets parameters that affect the building of pairwise neighbot lists; 2.0: distance units; bin: stlye
+neighbor        2.0 bin
+#neigh_modify: sets parameters that affect the building and use of pairwise neighbor lists
+#delay 5: delay building until 5 steps from last build; check: affect how often lists are built as a simulation runs
+neigh_modify    delay 5 check yes
+
+# timestep = 1fs  (metal unit 1 = 1 ps)
+timestep        0.001
+
+#sc lattice has 1 basis atom at the lower-left-bottom corner of the cube
+lattice  	sc 	1
+
+#thermo_style: sets style & content for printing thermo. data
+#custom: most deneral setting, allows user to specify what they want printed (here: step, temp, pe, ke, etotal)
+thermo_style    custom step temp pe ke etotal
+#thermo N: computes and prints thermodynamic info every N timesteps (here: 10,000)
+thermo          10000
+#atom will become "lost" and there will be an error if it goes outside of the thermo boundary
+thermo_modify   lost error
+
+# Fix the boundary to prevent pseudo momentum transfer
+fix             freeze_wall    wall setforce 0.0 0.0 0.0
+
+# switch to NVE simulation
+fix             E_bulk  bulk  nve 
+
+# transfer a constant heat from cold_R to hot_R
+# the heat is back-calculated from q = -k*deltT/l
+# heat = 0.01*1.6E-7 W
+fix             H1 hot_R  heat 1  0.01
+fix             H2 cold_R heat 1 -0.01
+
+dump            1 all xyz 250000 dump.xyz
+
+compute		ke all ke/atom
+variable	temp atom c_ke*335.43*23.06
+
+fix		xcnt_lo x_lo ave/spatial 100 100 10000 x lower 0.05 v_temp file x_lo_T.txt units reduced
+fix		zcnt_hi z_hi ave/spatial 100 100 10000 z lower 0.05 v_temp file z_hi_T.txt units reduced
+
+fix		xcnt_lo1 x_lo ave/spatial 500 1000 500000 x lower 1 v_temp file x_lo_all.txt units reduced
+fix		zcnt_hi1 z_hi ave/spatial 500 1000 500000 z lower 1 v_temp file z_hi_all.txt units reduced
+#writes a restart file every N (here: 25,000) timesteps to files "restart.1" and "restart.s"
+restart         100000 restart.1 restart.2
+#runs simulation for N timesteps (here: 5,000,000)
+run             50000000
+#writes a binary restart file of the current state of the simulation named "save.2ns"
+write_restart   save.50ns

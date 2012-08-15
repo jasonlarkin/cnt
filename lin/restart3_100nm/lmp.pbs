@@ -1,0 +1,23 @@
+#!/bin/csh -x
+#PBS -A AFOSR32173NTC
+#PBS -l select=32:ncpus=8:mpiprocs=8
+#PBS -l place=scatter:excl
+#PBS -l walltime=120:00:00
+#PBS -N 100nm
+#PBS -q standard
+#PBS -l application=lmp
+#PBS -o <my_output_directory>
+#PBS -j oe
+
+date
+cd $PBS_O_WORKDIR
+
+export MPI_GROUP_MAX=512
+
+source /usr/share/modules/init/csh
+
+module swap mpi mpi/intelmpi-4.0.0
+
+mpirun -np 256 /usr/local/u/jmlarkin/lammps/lammps-2Nov10/src/lmp_mkl < /usr/local/u/jmlarkin/lammps/lin/restart3_100nm/in.start
+
+
