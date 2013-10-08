@@ -1,0 +1,77 @@
+LAMMPS (22 Feb 2013)
+##########SEED##########################################################
+label loop_seed
+variable iseed loop 5
+variable seed index 11111 22222 33333 44444 55555 ###66666 77777 88888 99999 11112
+clear
+
+# Lennard-Jones
+#Prepare Geometry---------------------------------------------------------------
+units			lj
+atom_style		atomic
+read_data		lmp.in.x0.1
+  orthogonal box = (0 0 0) to (65.4 65.4 65.4)
+  1 by 1 by 1 MPI processor grid
+  256 atoms
+#Initialize Structure-----------------------------------------------------------
+#mass           	1  1.0
+#group         		Ar type = 1
+#LJ Potentials------------------------------------------------------------------
+pair_style		lj/cut 2.5
+pair_coeff		* * 1.0 1.0
+pair_modify          	shift yes
+#pair_modify   	tail no
+
+#Variables----------------------------------------------------------------------
+#LJ Parameters
+variable    	kB 		equal 1.3806504e-23 	# [J/K] Boltzmann
+variable	sigma_Ar 	equal 3.4e-10 		# m
+variable	eps_Ar		equal 1.67e-21		# J
+variable	mass_Ar		equal 6.63e-26		# kg
+variable	tau_Ar		equal 2.1423e-12	# s
+#thermo Parameters
+variable    	T_melt 		equal 300*(${kB}/${eps_Ar})
+variable    	T_melt 		equal 300*(1.3806504000000001236e-23/${eps_Ar})
+variable    	T_melt 		equal 300*(1.3806504000000001236e-23/1.6699999999999999942e-21)
+variable	T_0K		equal 0.00001
+variable	T_2_5K		equal 2.5*(${kB}/${eps_Ar})
+variable	T_2_5K		equal 2.5*(1.3806504000000001236e-23/${eps_Ar})
+variable	T_2_5K		equal 2.5*(1.3806504000000001236e-23/1.6699999999999999942e-21)
+variable	T_5K		equal 5*(${kB}/${eps_Ar})
+variable	T_5K		equal 5*(1.3806504000000001236e-23/${eps_Ar})
+variable	T_5K		equal 5*(1.3806504000000001236e-23/1.6699999999999999942e-21)
+variable	T_10K		equal 10*(${kB}/${eps_Ar})
+variable	T_10K		equal 10*(1.3806504000000001236e-23/${eps_Ar})
+variable	T_10K		equal 10*(1.3806504000000001236e-23/1.6699999999999999942e-21)
+variable	T_15K		equal 15*(${kB}/${eps_Ar})
+variable	T_15K		equal 15*(1.3806504000000001236e-23/${eps_Ar})
+variable	T_15K		equal 15*(1.3806504000000001236e-23/1.6699999999999999942e-21)
+variable	T_320K		equal 320*(${kB}/${eps_Ar})
+variable	T_320K		equal 320*(1.3806504000000001236e-23/${eps_Ar})
+variable	T_320K		equal 320*(1.3806504000000001236e-23/1.6699999999999999942e-21)
+
+variable   	dt 		equal 0.002
+variable	quench_rate	equal 1.0
+variable	quench_length 	equal 10000
+#kappa parameters
+variable    	p 		equal 200000 		# correlation length
+variable    	s 		equal 5  		# sample interval
+variable    	d 		equal $p*$s 		# dump interval
+variable    	d 		equal 200000*$s 		
+variable    	d 		equal 200000*5 		
+
+#SED parameters
+variable	w_step		equal 2^5
+variable	w_total		equal 2^16
+variable	t_total		equal 2^18
+variable	num_ffts	equal ${t_total}/${w_total}
+variable	num_ffts	equal 262144/${w_total}
+variable	num_ffts	equal 262144/65536
+
+#------------ RUN TEMP ---------------------------------------------------------------------
+variable 	T_run 		equal ${T_320K}
+variable 	T_run 		equal 2.6455576526946114058
+#------------ RUN TEMP ---------------------------------------------------------------------
+
+log 	log_heat_${iseed}.lammps
+log 	log_heat_1.lammps
